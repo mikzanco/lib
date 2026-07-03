@@ -115,7 +115,7 @@ class _StandingsScreenState extends State<StandingsScreen> {
                 ),
                 const SizedBox(width: 6),
                 const Text(
-                  "Qualificata",
+                  "Qualificata agli Ottavi (1°–4° posto)",
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -124,18 +124,18 @@ class _StandingsScreenState extends State<StandingsScreen> {
                 ),
                 const SizedBox(width: 20),
                 
-                // Yellow indicator
+                // Red indicator
                 Container(
                   width: 12,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: AppColors.warning,
+                    color: AppColors.error,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
                 const SizedBox(width: 6),
                 const Text(
-                  "Seconda",
+                  "Eliminata (5° posto)",
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,

@@ -14,7 +14,7 @@ class TournamentProvider extends ChangeNotifier {
   bool adminMode = false;
   bool loaded = false;
   bool goalFlash = false;
-  String adminPin = "123456"; // PIN predefinito
+  String adminPin = "425084"; // PIN predefinito
 
   StreamSubscription? _teamsSubscription;
   StreamSubscription? _matchesSubscription;
@@ -64,11 +64,12 @@ class TournamentProvider extends ChangeNotifier {
 
         // Ordinamento corretto per le partite
         final idOrder = [
-          for (int i = 1; i <= 8; i++) "A$i",
-          for (int i = 1; i <= 8; i++) "B$i",
-          for (int i = 1; i <= 8; i++) "C$i",
-          for (int i = 1; i <= 8; i++) "D$i",
-          for (int i = 1; i <= 8; i++) "QF$i",
+          for (int i = 1; i <= 10; i++) "A$i",
+          for (int i = 1; i <= 10; i++) "B$i",
+          for (int i = 1; i <= 10; i++) "C$i",
+          for (int i = 1; i <= 10; i++) "D$i",
+          for (int i = 1; i <= 8; i++) "OT$i",
+          for (int i = 1; i <= 4; i++) "QF$i",
           "SF1",
           "SF2",
           "F3",
@@ -335,31 +336,31 @@ class TournamentProvider extends ChangeNotifier {
     if (qA.length < 4 || qB.length < 4 || qC.length < 4 || qD.length < 4) return;
 
     // Seeding logic per gli Ottavi (OT1 - OT8)
-    // OT1: 1°A vs 4°D | OT2: 2°B vs 3°C | OT3: 1°C vs 4°B | OT4: 2°D vs 3°A
-    // OT5: 1°B vs 4°C | OT6: 2°A vs 3°D | OT7: 1°D vs 4°A | OT8: 2°C vs 3°B
+    // OT1 (10:00): 1A vs 4B | OT2 (10:30): 2C vs 3D | OT3 (11:00): 1B vs 4A | OT4 (11:30): 2D vs 3C
+    // OT5 (12:00): 1C vs 4D | OT6 (12:30): 2A vs 3B | OT7 (13:00): 2B vs 3A | OT8 (13:30): 1D vs 4C
     final newMatches = [
-      MatchModel(id: "OT1", group: "KO", home: qA[0].id, away: qD[3].id, day: "Dom 5 Lug", time: "14:00", phase: "OT"),
-      MatchModel(id: "OT2", group: "KO", home: qB[1].id, away: qC[2].id, day: "Dom 5 Lug", time: "14:30", phase: "OT"),
-      MatchModel(id: "OT3", group: "KO", home: qC[0].id, away: qB[3].id, day: "Dom 5 Lug", time: "15:00", phase: "OT"),
-      MatchModel(id: "OT4", group: "KO", home: qD[1].id, away: qA[2].id, day: "Dom 5 Lug", time: "15:30", phase: "OT"),
-      MatchModel(id: "OT5", group: "KO", home: qB[0].id, away: qC[3].id, day: "Dom 5 Lug", time: "16:00", phase: "OT"),
-      MatchModel(id: "OT6", group: "KO", home: qA[1].id, away: qD[2].id, day: "Dom 5 Lug", time: "16:30", phase: "OT"),
-      MatchModel(id: "OT7", group: "KO", home: qD[0].id, away: qA[3].id, day: "Dom 5 Lug", time: "17:00", phase: "OT"),
-      MatchModel(id: "OT8", group: "KO", home: qC[1].id, away: qB[2].id, day: "Dom 5 Lug", time: "17:30", phase: "OT"),
+      MatchModel(id: "OT1", group: "KO", home: qA[0].id, away: qB[3].id, day: "Dom 5 Lug", time: "10:00", phase: "OT"),
+      MatchModel(id: "OT2", group: "KO", home: qC[1].id, away: qD[2].id, day: "Dom 5 Lug", time: "10:30", phase: "OT"),
+      MatchModel(id: "OT3", group: "KO", home: qB[0].id, away: qA[3].id, day: "Dom 5 Lug", time: "11:00", phase: "OT"),
+      MatchModel(id: "OT4", group: "KO", home: qD[1].id, away: qC[2].id, day: "Dom 5 Lug", time: "11:30", phase: "OT"),
+      MatchModel(id: "OT5", group: "KO", home: qC[0].id, away: qD[3].id, day: "Dom 5 Lug", time: "12:00", phase: "OT"),
+      MatchModel(id: "OT6", group: "KO", home: qA[1].id, away: qB[2].id, day: "Dom 5 Lug", time: "12:30", phase: "OT"),
+      MatchModel(id: "OT7", group: "KO", home: qB[1].id, away: qA[2].id, day: "Dom 5 Lug", time: "13:00", phase: "OT"),
+      MatchModel(id: "OT8", group: "KO", home: qD[0].id, away: qC[3].id, day: "Dom 5 Lug", time: "13:30", phase: "OT"),
 
       // Quarti di Finale (QF1 - QF4)
-      MatchModel(id: "QF1", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "18:30", phase: "QF"),
-      MatchModel(id: "QF2", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "19:00", phase: "QF"),
-      MatchModel(id: "QF3", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "19:30", phase: "QF"),
-      MatchModel(id: "QF4", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "20:00", phase: "QF"),
+      MatchModel(id: "QF1", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "14:00", phase: "QF"),
+      MatchModel(id: "QF2", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "14:30", phase: "QF"),
+      MatchModel(id: "QF3", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "15:00", phase: "QF"),
+      MatchModel(id: "QF4", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "15:30", phase: "QF"),
 
       // Semifinali (SF1 - SF2)
-      MatchModel(id: "SF1", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "21:00", phase: "SF"),
-      MatchModel(id: "SF2", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "21:30", phase: "SF"),
+      MatchModel(id: "SF1", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "16:00", phase: "SF"),
+      MatchModel(id: "SF2", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "16:30", phase: "SF"),
 
       // Finali
-      MatchModel(id: "F3", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "22:30", phase: "F"),
-      MatchModel(id: "F", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "23:00", phase: "F"),
+      MatchModel(id: "F3", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "17:30", phase: "F"),
+      MatchModel(id: "F", group: "KO", home: null, away: null, day: "Dom 5 Lug", time: "18:00", phase: "F"),
     ];
 
     final batch = FirebaseFirestore.instance.batch();

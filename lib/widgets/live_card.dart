@@ -25,21 +25,45 @@ class _LiveCardState extends State<LiveCard> {
   late int _minute;
   Timer? _minuteTimer;
 
+  int get _maxDuration {
+    if (widget.match.group != 'KO') {
+      return 12; // tempo unico da 12' per i gironi
+    }
+    // Fase a eliminazione diretta
+    if (widget.match.id.startsWith("OT") || widget.match.id.startsWith("QF") || widget.match.id.startsWith("SF")) {
+      int base = 20; // un tempo da 20'
+      return widget.match.isExtraTime ? base + 5 : base;
+    }
+    if (widget.match.id == "F3") {
+      return 10; // finalina un tempo da 10'
+    }
+    if (widget.match.id == "F") {
+      int base = 30; // due tempi da 15'
+      return widget.match.isExtraTime ? base + 5 : base;
+    }
+    return 20; // default KO
+  }
+
   @override
   void initState() {
     super.initState();
-    // Inizializza a 48 minuti (o l'ultimo marcatore + 5 per realismo)
-    int initialMin = 48;
+    // Inizializza a 1 (o l'ultimo marcatore + 1 per realismo)
+    int initialMin = 1;
     if (widget.match.scorers.isNotEmpty) {
       final maxMin = widget.match.scorers.map((s) => s.min).reduce((a, b) => a > b ? a : b);
-      initialMin = maxMin + 5;
+      initialMin = maxMin + 1;
     }
-    _minute = initialMin.clamp(1, 90);
+    _minute = initialMin.clamp(1, _maxDuration);
 
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _minuteTimer?.cancel();
     _minuteTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) {
         setState(() {
-          if (_minute < 90) {
+          if (_minute < _maxDuration) {
             _minute++;
           } else {
             _minuteTimer?.cancel();
@@ -47,6 +71,18 @@ class _LiveCardState extends State<LiveCard> {
         });
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant LiveCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final maxDur = _maxDuration;
+    if (_minute > maxDur) {
+      _minute = maxDur;
+    }
+    if (_minute < maxDur && (_minuteTimer == null || !_minuteTimer!.isActive)) {
+      _startTimer();
+    }
   }
 
   @override

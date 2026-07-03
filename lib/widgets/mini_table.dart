@@ -72,15 +72,8 @@ class MiniTable extends StatelessWidget {
           // Rows
           ...List.generate(rows.length, (i) {
             final t = rows[i];
-            final isFirst = i == 0;
-            final isSecond = i == 1;
-
-            Color? leftBorderColor;
-            if (isFirst) {
-              leftBorderColor = AppColors.success;
-            } else if (isSecond) {
-              leftBorderColor = AppColors.warning;
-            }
+            final isQualified = i < 4;
+            final leftBorderColor = isQualified ? AppColors.success : AppColors.error;
 
             final posColor = i == 0
                 ? AppColors.accent
@@ -97,9 +90,7 @@ class MiniTable extends StatelessWidget {
                         ? Colors.transparent
                         : AppColors.border.withValues(alpha: 0.5),
                   ),
-                  left: leftBorderColor != null
-                      ? BorderSide(color: leftBorderColor, width: 2)
-                      : BorderSide.none,
+                  left: BorderSide(color: leftBorderColor, width: 2),
                 ),
               ),
               child: Row(

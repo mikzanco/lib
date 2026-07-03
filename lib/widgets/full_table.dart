@@ -74,15 +74,8 @@ class FullTable extends StatelessWidget {
     }
 
     Widget buildRow(StandingRow t, int index) {
-      final isFirst = index == 0;
-      final isSecond = index == 1;
-
-      Color? leftBorderColor;
-      if (isFirst) {
-        leftBorderColor = AppColors.success;
-      } else if (isSecond) {
-        leftBorderColor = AppColors.warning;
-      }
+      final isQualified = index < 4;
+      final leftBorderColor = isQualified ? AppColors.success : AppColors.error;
 
       final posColor = index == 0
           ? AppColors.accent
@@ -101,9 +94,7 @@ class FullTable extends StatelessWidget {
                   ? Colors.transparent
                   : AppColors.border.withValues(alpha: 0.5),
             ),
-            left: leftBorderColor != null
-                ? BorderSide(color: leftBorderColor, width: 2)
-                : BorderSide.none,
+            left: BorderSide(color: leftBorderColor, width: 2),
           ),
         ),
         child: Row(

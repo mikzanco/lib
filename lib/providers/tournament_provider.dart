@@ -124,14 +124,26 @@ class TournamentProvider extends ChangeNotifier {
     try {
       final batch = FirebaseFirestore.instance.batch();
 
-      // Elimina tutti i match correnti
+      // 1. Elimina tutte le squadre correnti su Firestore
+      for (final t in teams) {
+        final docRef = FirebaseFirestore.instance.collection('teams').doc(t.id.toString());
+        batch.delete(docRef);
+      }
+
+      // 2. Carica le nuove squadre iniziali (con jolly e giocatori reali)
+      for (final team in INITIAL_TEAMS) {
+        final docRef = FirebaseFirestore.instance.collection('teams').doc(team.id.toString());
+        batch.set(docRef, team.toJson());
+      }
+
+      // 3. Elimina tutti i match correnti
       for (final m in matches) {
         final docRef =
             FirebaseFirestore.instance.collection('matches').doc(m.id);
         batch.delete(docRef);
       }
 
-      // Ricrea solo i match dei gironi iniziali resettati
+      // 4. Ricrea solo i match dei gironi iniziali resettati
       final cleanMatches = INITIAL_MATCHES.map((m) {
         return MatchModel(
           id: m.id,

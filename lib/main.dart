@@ -71,10 +71,9 @@ class _TournamentShellState extends State<TournamentShell> {
   ];
 
   void _openAdminLoginModal() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      barrierDismissible: true,
       builder: (context) {
         return AdminModal(
           onSuccess: () {

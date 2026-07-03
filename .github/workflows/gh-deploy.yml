@@ -26,7 +26,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Web App
-        run: flutter build web --base-href "/Torneo_Lozzo_2026/" --web-renderer html
+        run: flutter build web --base-href "/Torneo_Lozzo_2026/"
 
       - name: Disable Service Worker (Forces Cache Updates)
         run: rm -f build/web/flutter_service_worker.js

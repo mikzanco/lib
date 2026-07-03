@@ -21,10 +21,14 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
   bool _hasError = false;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
+  late TextEditingController _pinController;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
+    _pinController = TextEditingController();
+    _focusNode = FocusNode();
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -32,32 +36,31 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
     _shakeAnimation = Tween<double>(begin: 0.0, end: 10.0)
         .chain(CurveTween(curve: Curves.elasticIn))
         .animate(_shakeController);
+
+    // Auto-focus dopo l'apertura del dialogo
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
   void dispose() {
     _shakeController.dispose();
+    _pinController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _handleKeyPress(String key) {
-    if (_hasError) return; // Disattiva tastierino durante l'errore
-
+  void _onPinChanged(String value) {
+    if (_hasError) return;
     setState(() {
-      if (key == "⌫") {
-        if (_pin.isNotEmpty) {
-          _pin = _pin.substring(0, _pin.length - 1);
-        }
-      } else if (_pin.length < 6) {
-        _pin += key;
-        if (_pin.length == 6) {
-          // Auto-submit
-          Future.delayed(const Duration(milliseconds: 150), () {
-            _submitPin();
-          });
-        }
-      }
+      _pin = value;
     });
+    if (value.length == 6) {
+      _submitPin();
+    }
   }
 
   void _submitPin() {
@@ -74,8 +77,10 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
           if (mounted) {
             setState(() {
               _pin = "";
+              _pinController.clear();
               _hasError = false;
             });
+            _focusNode.requestFocus();
           }
         });
       });
@@ -88,9 +93,9 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
       children: List.generate(6, (i) {
         final filled = _pin.length > i;
         return Container(
-          width: 48,
-          height: 48,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             color: filled ? AppColors.accent.withValues(alpha: 0.1) : Colors.transparent,
             border: Border.all(
@@ -107,7 +112,7 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
             child: Text(
               filled ? "●" : "",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: _hasError ? AppColors.error : AppColors.accent,
               ),
@@ -115,39 +120,6 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
           ),
         );
       }),
-    );
-  }
-
-  Widget _buildKeypadButton(String label) {
-    if (label.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final isDelete = label == "⌫";
-
-    return GestureDetector(
-      onTap: () => _handleKeyPress(label),
-      child: Container(
-        margin: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.borderDark.withValues(alpha: 0.5),
-            width: 1,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: isDelete ? 20 : 22,
-              fontWeight: FontWeight.bold,
-              color: isDelete ? AppColors.textTertiary : AppColors.white,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -193,17 +165,20 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
               ),
               const SizedBox(height: 24),
               
-              // Shaking PIN boxes
-              AnimatedBuilder(
-                animation: _shakeAnimation,
-                builder: (ctx, child) {
-                  final offset = math.sin(_shakeAnimation.value * math.pi * 4) * _shakeAnimation.value;
-                  return Transform.translate(
-                    offset: Offset(offset, 0),
-                    child: child,
-                  );
-                },
-                child: _buildPinBoxes(),
+              // Shaking PIN boxes with tap-to-focus helper
+              GestureDetector(
+                onTap: () => _focusNode.requestFocus(),
+                child: AnimatedBuilder(
+                  animation: _shakeAnimation,
+                  builder: (ctx, child) {
+                    final offset = math.sin(_shakeAnimation.value * math.pi * 4) * _shakeAnimation.value;
+                    return Transform.translate(
+                      offset: Offset(offset, 0),
+                      child: child,
+                    );
+                  },
+                  child: _buildPinBoxes(),
+                ),
               ),
               
               const SizedBox(height: 16),
@@ -225,52 +200,29 @@ class _AdminModalState extends State<AdminModal> with SingleTickerProviderStateM
               
               const SizedBox(height: 12),
               
-              // Grid Keypad (Row/Column based for absolute responsiveness and zero overflow)
-              SizedBox(
-                height: 230,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildKeypadButton("1")),
-                          Expanded(child: _buildKeypadButton("2")),
-                          Expanded(child: _buildKeypadButton("3")),
-                        ],
-                      ),
+              // Invisible 1x1 TextField to receive native keyboard inputs automatically
+              Opacity(
+                opacity: 0.0,
+                child: SizedBox(
+                  width: 1,
+                  height: 1,
+                  child: TextField(
+                    controller: _pinController,
+                    focusNode: _focusNode,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    autofocus: true,
+                    obscureText: true,
+                    showCursor: false,
+                    enableInteractiveSelection: false,
+                    onChanged: _onPinChanged,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      counterText: "",
                     ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildKeypadButton("4")),
-                          Expanded(child: _buildKeypadButton("5")),
-                          Expanded(child: _buildKeypadButton("6")),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildKeypadButton("7")),
-                          Expanded(child: _buildKeypadButton("8")),
-                          Expanded(child: _buildKeypadButton("9")),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Expanded(child: SizedBox.shrink()),
-                          Expanded(child: _buildKeypadButton("0")),
-                          Expanded(child: _buildKeypadButton("⌫")),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-              
-              const SizedBox(height: 12),
               
               // Cancel button
               TextButton(

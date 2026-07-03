@@ -6,6 +6,7 @@ import '../providers/tournament_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/live_card.dart';
 import '../widgets/team_badge.dart';
+import '../widgets/scheduled_matches_modal.dart';
 
 class LiveScreen extends StatefulWidget {
   final VoidCallback? onShowCalendar;
@@ -210,6 +211,37 @@ class _LiveScreenState extends State<LiveScreen> {
                     Text("📋 ", style: TextStyle(fontSize: 16)),
                     Text(
                       "Vedi Calendario Completo",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const ScheduledMatchesModal(),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("📅 ", style: TextStyle(fontSize: 16)),
+                    Text(
+                      "Partite da Giocare",
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w900,

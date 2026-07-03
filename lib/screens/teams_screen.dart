@@ -424,7 +424,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
-                          "Inserisci un nuovo codice numerico di esattamente 4 cifre per blindare l'accesso.",
+                          "Inserisci un nuovo codice numerico di esattamente 6 cifre per blindare l'accesso.",
                           style: TextStyle(
                             color: AppColors.textTertiary,
                             fontSize: 12,
@@ -436,7 +436,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                           controller: pinController1,
                           obscureText: true,
                           keyboardType: TextInputType.number,
-                          maxLength: 4,
+                          maxLength: 6,
                           style: const TextStyle(
                             color: AppColors.white,
                             fontWeight: FontWeight.bold,
@@ -459,8 +459,8 @@ class _TeamsScreenState extends State<TeamsScreen> {
                             ),
                           ),
                           validator: (val) {
-                            if (val == null || val.length != 4 || int.tryParse(val) == null) {
-                              return "Inserisci 4 cifre numeriche";
+                            if (val == null || val.length != 6 || int.tryParse(val) == null) {
+                              return "Inserisci 6 cifre numeriche";
                             }
                             return null;
                           },
@@ -470,7 +470,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                           controller: pinController2,
                           obscureText: true,
                           keyboardType: TextInputType.number,
-                          maxLength: 4,
+                          maxLength: 6,
                           style: const TextStyle(
                             color: AppColors.white,
                             fontWeight: FontWeight.bold,

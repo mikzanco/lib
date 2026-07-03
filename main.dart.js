@@ -88649,11 +88649,11 @@ $0(){var s=$.as()
 A.aIE(new A.atC(new A.bf(null,t.am),new A.k8(B.dB,s),new A.k8(B.dB,s),this.b),this.a,t.z)},
 $S:0}
 A.atC.prototype={
-$1(a){var s=this,r=null,q=A.aB(20),p=s.a,o=s.b,n=t.p,m=A.bK(A.b([B.ZX,B.cG,A.aFr(o,A.py(r,new A.dZ(4,A.aB(12),B.p),r,r,r,r,"",r,!0,r,r,r,r,r,r,B.a0,!0,r,r,r,r,r,r,r,r,r,r,r,r,r,B.Bs,"Nuovo PIN",r,r,r,r,r,r,r,r,r,!0,!0,!1,r,r,r,r,r,r,r,r,r,r,r,r,r,r),B.fV,4,!0,B.Bv,B.a8,new A.atx()),B.aL,A.aFr(s.c,A.py(r,new A.dZ(4,A.aB(12),B.p),r,r,r,r,"",r,!0,r,r,r,r,r,r,B.a0,!0,r,r,r,r,r,r,r,r,r,r,r,r,r,B.Bs,"Conferma PIN",r,r,r,r,r,r,r,r,r,!0,!0,!1,r,r,r,r,r,r,r,r,r,r,r,r,r,r),B.fV,4,!0,B.Bv,B.a8,new A.aty(o))],n),B.ai,B.aj)
+$1(a){var s=this,r=null,q=A.aB(20),p=s.a,o=s.b,n=t.p,m=A.bK(A.b([B.ZX,B.cG,A.aFr(o,A.py(r,new A.dZ(4,A.aB(12),B.p),r,r,r,r,"",r,!0,r,r,r,r,r,r,B.a0,!0,r,r,r,r,r,r,r,r,r,r,r,r,r,B.Bs,"Nuovo PIN",r,r,r,r,r,r,r,r,r,!0,!0,!1,r,r,r,r,r,r,r,r,r,r,r,r,r,r),B.fV,6,!0,B.Bv,B.a8,new A.atx()),B.aL,A.aFr(s.c,A.py(r,new A.dZ(4,A.aB(12),B.p),r,r,r,r,"",r,!0,r,r,r,r,r,r,B.a0,!0,r,r,r,r,r,r,r,r,r,r,r,r,r,B.Bs,"Conferma PIN",r,r,r,r,r,r,r,r,r,!0,!0,!1,r,r,r,r,r,r,r,r,r,r,r,r,r,r),B.fV,6,!0,B.Bv,B.a8,new A.aty(o))],n),B.ai,B.aj)
 return A.aBM(A.b([A.vj(B.BJ,new A.atz(a),r),A.aCV(B.Zs,new A.atA(p,s.d,o,a),A.aCW(r,r,B.t,r,r,r,0,r,r,B.m,r,r,B.oW,r,new A.cK(A.aB(12),B.p),r,r,r,r,r))],n),B.az,new A.zw(m,B.jQ,p),new A.cK(q,B.hc),B.R_)},
 $S:176}
 A.atx.prototype={
-$1(a){if(a.length!==4||A.la(a,null)==null)return"Inserisci 4 cifre numeriche"
+$1(a){if(a.length!==6||A.la(a,null)==null)return"Inserisci 6 cifre numeriche"
 return null},
 $S:167}
 A.aty.prototype={
@@ -96043,7 +96043,7 @@ B.XQ=new A.j(!0,B.k,null,null,null,null,54,null,null,null,null,null,null,null,nu
 B.ZU=new A.at("\u26bd",null,B.XQ,null,null,null,null,null,null)
 B.ZV=new A.at("MINUTO",null,B.bZ,null,null,null,null,null,null)
 B.WX=new A.j(!0,B.aa,null,null,null,null,12,null,null,null,null,null,1.4,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ZX=new A.at("Inserisci un nuovo codice numerico di esattamente 4 cifre per blindare l'accesso.",null,B.WX,null,null,null,null,null,null)
+B.ZX=new A.at("Inserisci un nuovo codice numerico di esattamente 6 cifre per blindare l'accesso.",null,B.WX,null,null,null,null,null,null)
 B.a_1=new A.at("\ud83e\uddf9 Resetta Torneo?",null,B.Bm,null,null,null,null,null,null)
 B.a_4=new A.at("SQUADRE PER GIRONE",null,B.bZ,null,null,null,null,null,null)
 B.a_5=new A.at("\u26bd T",null,B.j7,null,null,null,null,null,null)

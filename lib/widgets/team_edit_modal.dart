@@ -424,22 +424,130 @@ class _TeamEditModalState extends State<TeamEditModal> {
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: TeamColors.gradients[_color],
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "#${p.n}",
-                                        style: const TextStyle(
-                                          color: AppColors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                                  // Numero maglia cliccabile per modifica
+                                  GestureDetector(
+                                    onTap: () {
+                                      final editController = TextEditingController(text: p.n.toString());
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          backgroundColor: AppColors.cardBg,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(20),
+                                            side: const BorderSide(color: AppColors.border),
+                                          ),
+                                          title: Text(
+                                            "Cambia numero di ${p.name}",
+                                            style: const TextStyle(
+                                              color: AppColors.white,
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          content: TextField(
+                                            controller: editController,
+                                            keyboardType: TextInputType.number,
+                                            autofocus: true,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 22,
+                                              color: AppColors.accent,
+                                              letterSpacing: 4,
+                                            ),
+                                            decoration: InputDecoration(
+                                              hintText: "#",
+                                              hintStyle: const TextStyle(color: AppColors.textTertiary),
+                                              filled: true,
+                                              fillColor: AppColors.inputBg,
+                                              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide.none,
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: const BorderSide(color: AppColors.accent, width: 2),
+                                              ),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(ctx),
+                                              child: const Text(
+                                                "Annulla",
+                                                style: TextStyle(
+                                                  color: AppColors.textTertiary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.accent,
+                                                foregroundColor: AppColors.black,
+                                                elevation: 0,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                              ),
+                                              onPressed: () {
+                                                final newNum = int.tryParse(editController.text.trim());
+                                                if (newNum == null || newNum < 1 || newNum > 99) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text("Inserisci un numero valido (1-99)"),
+                                                      backgroundColor: AppColors.error,
+                                                    ),
+                                                  );
+                                                  return;
+                                                }
+                                                // Controlla duplicati (escludendo il giocatore corrente)
+                                                if (_players.any((pl) => pl.n == newNum && pl.name != p.name)) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text("Numero già assegnato ad un altro giocatore!"),
+                                                      backgroundColor: AppColors.error,
+                                                    ),
+                                                  );
+                                                  return;
+                                                }
+                                                setState(() {
+                                                  _players[i] = Player(n: newNum, name: p.name);
+                                                  _players.sort((a, b) => a.n.compareTo(b.n));
+                                                });
+                                                Navigator.pop(ctx);
+                                              },
+                                              child: const Text(
+                                                "Salva",
+                                                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: TeamColors.gradients[_color],
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            "#${p.n}",
+                                            style: const TextStyle(
+                                              color: AppColors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),

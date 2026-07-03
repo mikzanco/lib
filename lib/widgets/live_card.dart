@@ -24,6 +24,7 @@ class LiveCard extends StatefulWidget {
 class _LiveCardState extends State<LiveCard> {
   late int _elapsedSeconds;
   Timer? _secondTimer;
+  bool _isSecondHalfStarted = false;
 
   int get _maxDuration {
     if (widget.match.group != 'KO') {
@@ -65,6 +66,7 @@ class _LiveCardState extends State<LiveCard> {
     }
     initialMin = initialMin.clamp(1, _maxDuration);
     _elapsedSeconds = (initialMin - 1) * 60;
+    _isSecondHalfStarted = _elapsedSeconds >= 900;
 
     _startTimer();
   }
@@ -74,7 +76,11 @@ class _LiveCardState extends State<LiveCard> {
     _secondTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          if (_elapsedSeconds < _maxDuration * 60) {
+          int limit = _maxDuration * 60;
+          if (widget.match.id == 'F' && !_isSecondHalfStarted) {
+            limit = 900; // 15:00
+          }
+          if (_elapsedSeconds < limit) {
             _elapsedSeconds++;
           } else {
             _secondTimer?.cancel();
@@ -87,11 +93,14 @@ class _LiveCardState extends State<LiveCard> {
   @override
   void didUpdateWidget(covariant LiveCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final maxSec = _maxDuration * 60;
-    if (_elapsedSeconds > maxSec) {
-      _elapsedSeconds = maxSec;
+    int limit = _maxDuration * 60;
+    if (widget.match.id == 'F' && !_isSecondHalfStarted) {
+      limit = 900;
     }
-    if (_elapsedSeconds < maxSec && (_secondTimer == null || !_secondTimer!.isActive)) {
+    if (_elapsedSeconds > limit) {
+      _elapsedSeconds = limit;
+    }
+    if (_elapsedSeconds < limit && (_secondTimer == null || !_secondTimer!.isActive)) {
       _startTimer();
     }
   }
@@ -165,8 +174,24 @@ class _LiveCardState extends State<LiveCard> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const LiveDot(),
-                    const SizedBox(width: 8),
+                    if (widget.match.id == 'F' && _elapsedSeconds == 900 && !_isSecondHalfStarted) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.warning.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                        ),
+                        child: const Text(
+                          "INTERVALLO",
+                          style: TextStyle(color: AppColors.warning, fontSize: 8, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ] else ...[
+                      const LiveDot(),
+                      const SizedBox(width: 8),
+                    ],
                     Text(
                       _formatDuration(_elapsedSeconds),
                       style: const TextStyle(
@@ -812,6 +837,36 @@ class _LiveCardState extends State<LiveCard> {
                     }
                     return const SizedBox.shrink();
                   }(),
+                  // Start Second Half button (Only for Final, when elapsed time is 15:00 and second half not started)
+                  if (widget.match.id == 'F' && _elapsedSeconds == 900 && !_isSecondHalfStarted) ...[
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isSecondHalfStarted = true;
+                        });
+                        _startTimer();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.15),
+                          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            "▶ Avvia Secondo Tempo",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   // End Match button
                   GestureDetector(
                     onTap: () {

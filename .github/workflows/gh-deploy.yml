@@ -28,6 +28,9 @@ jobs:
       - name: Build Web App
         run: flutter build web --base-href "/Torneo_Lozzo_2026/" --web-renderer html
 
+      - name: Disable Service Worker (Forces Cache Updates)
+        run: rm -f build/web/flutter_service_worker.js
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:

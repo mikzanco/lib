@@ -22,8 +22,8 @@ class LiveCard extends StatefulWidget {
 }
 
 class _LiveCardState extends State<LiveCard> {
-  late int _minute;
-  Timer? _minuteTimer;
+  late int _elapsedSeconds;
+  Timer? _secondTimer;
 
   int get _maxDuration {
     if (widget.match.group != 'KO') {
@@ -44,6 +44,16 @@ class _LiveCardState extends State<LiveCard> {
     return 20; // default KO
   }
 
+  int get _minute => ((_elapsedSeconds ~/ 60) + 1).clamp(1, _maxDuration);
+
+  String _formatDuration(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    final minutesStr = minutes.toString().padLeft(2, '0');
+    final secondsStr = seconds.toString().padLeft(2, '0');
+    return "$minutesStr:$secondsStr";
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,20 +63,21 @@ class _LiveCardState extends State<LiveCard> {
       final maxMin = widget.match.scorers.map((s) => s.min).reduce((a, b) => a > b ? a : b);
       initialMin = maxMin + 1;
     }
-    _minute = initialMin.clamp(1, _maxDuration);
+    initialMin = initialMin.clamp(1, _maxDuration);
+    _elapsedSeconds = (initialMin - 1) * 60;
 
     _startTimer();
   }
 
   void _startTimer() {
-    _minuteTimer?.cancel();
-    _minuteTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _secondTimer?.cancel();
+    _secondTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          if (_minute < _maxDuration) {
-            _minute++;
+          if (_elapsedSeconds < _maxDuration * 60) {
+            _elapsedSeconds++;
           } else {
-            _minuteTimer?.cancel();
+            _secondTimer?.cancel();
           }
         });
       }
@@ -76,18 +87,18 @@ class _LiveCardState extends State<LiveCard> {
   @override
   void didUpdateWidget(covariant LiveCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final maxDur = _maxDuration;
-    if (_minute > maxDur) {
-      _minute = maxDur;
+    final maxSec = _maxDuration * 60;
+    if (_elapsedSeconds > maxSec) {
+      _elapsedSeconds = maxSec;
     }
-    if (_minute < maxDur && (_minuteTimer == null || !_minuteTimer!.isActive)) {
+    if (_elapsedSeconds < maxSec && (_secondTimer == null || !_secondTimer!.isActive)) {
       _startTimer();
     }
   }
 
   @override
   void dispose() {
-    _minuteTimer?.cancel();
+    _secondTimer?.cancel();
     super.dispose();
   }
 
@@ -157,7 +168,7 @@ class _LiveCardState extends State<LiveCard> {
                     const LiveDot(),
                     const SizedBox(width: 8),
                     Text(
-                      "$_minute'",
+                      _formatDuration(_elapsedSeconds),
                       style: const TextStyle(
                         color: AppColors.accent,
                         fontWeight: FontWeight.w900,

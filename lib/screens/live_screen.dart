@@ -8,7 +8,9 @@ import '../widgets/live_card.dart';
 import '../widgets/team_badge.dart';
 
 class LiveScreen extends StatefulWidget {
-  const LiveScreen({super.key});
+  final VoidCallback? onShowCalendar;
+
+  const LiveScreen({super.key, this.onShowCalendar});
 
   @override
   State<LiveScreen> createState() => _LiveScreenState();
@@ -191,6 +193,32 @@ class _LiveScreenState extends State<LiveScreen> {
                   ),
                 );
               },
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: widget.onShowCalendar,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("📋 ", style: TextStyle(fontSize: 16)),
+                    Text(
+                      "Vedi Calendario Completo",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
 

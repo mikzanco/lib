@@ -61,8 +61,18 @@ class _TournamentShellState extends State<TournamentShell> {
   int _activeTabIndex = 0;
   final ScrollController _tabScrollController = ScrollController();
 
-  final List<Map<String, dynamic>> _tabs = [
-    {"id": 0, "label": "⚽ Live", "screen": const LiveScreen()},
+  List<Map<String, dynamic>> get _tabs => [
+    {
+      "id": 0, 
+      "label": "⚽ Live", 
+      "screen": LiveScreen(
+        onShowCalendar: () {
+          setState(() {
+            _activeTabIndex = 3;
+          });
+        },
+      )
+    },
     {"id": 1, "label": "📊 Classifica", "screen": const StandingsScreen()},
     {"id": 2, "label": "🥇 Cannonieri", "screen": const ScorersScreen()},
     {"id": 3, "label": "📋 Risultati", "screen": const ResultsScreen()},

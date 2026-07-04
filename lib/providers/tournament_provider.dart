@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -360,6 +361,28 @@ class TournamentProvider extends ChangeNotifier {
             .set(updated.toJson());
       }
     }
+  }
+
+  // ⚠️ TEMPORANEO: Inserisce risultati fittizi per testare il tabellone
+  Future<void> seedFakeResults() async {
+    final random = Random(42);
+    final batch = FirebaseFirestore.instance.batch();
+    final groupMatches = matches.where((m) => m.group != "KO").toList();
+
+    for (final m in groupMatches) {
+      final homeG = random.nextInt(5);
+      final awayG = random.nextInt(5);
+      final docRef = FirebaseFirestore.instance.collection('matches').doc(m.id);
+      batch.update(docRef, {
+        'status': 'done',
+        'homeGoals': homeG,
+        'awayGoals': awayG,
+        'scorers': [],
+        'homeFouls': 0,
+        'awayFouls': 0,
+      });
+    }
+    await batch.commit();
   }
 
   // Bracket Seeding

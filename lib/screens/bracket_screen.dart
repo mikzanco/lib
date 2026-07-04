@@ -102,6 +102,47 @@ class _BracketScreenState extends State<BracketScreen> {
                 ],
               ),
             ),
+            // ⚠️ PULSANTE TEST: Simula risultati (solo admin)
+            if (provider.adminMode) ...[
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () async {
+                  await provider.seedFakeResults();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("✅ Risultati fittizi inseriti! Ricarica la pagina."),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.1),
+                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("🧪", style: TextStyle(fontSize: 15)),
+                      SizedBox(width: 8),
+                      Text(
+                        "SIMULA RISULTATI GIRONI (TEST)",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.warning,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
 
           // 2. Gironi finiti, tabellone non ancora generato

@@ -554,12 +554,107 @@ class _TeamEditModalState extends State<TeamEditModal> {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Text(
-                                      p.name,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.textSecondary,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        final nameController = TextEditingController(text: p.name);
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            backgroundColor: AppColors.cardBg,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(20),
+                                              side: const BorderSide(color: AppColors.border),
+                                            ),
+                                            title: Text(
+                                              "Cambia nome di #${p.n}",
+                                              style: const TextStyle(
+                                                color: AppColors.white,
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            content: TextField(
+                                              controller: nameController,
+                                              autofocus: true,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: AppColors.white,
+                                              ),
+                                              decoration: InputDecoration(
+                                                hintText: "Nome giocatore",
+                                                hintStyle: const TextStyle(color: AppColors.textTertiary),
+                                                filled: true,
+                                                fillColor: AppColors.inputBg,
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  borderSide: const BorderSide(color: AppColors.accent, width: 2),
+                                                ),
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(ctx),
+                                                child: const Text(
+                                                  "Annulla",
+                                                  style: TextStyle(
+                                                    color: AppColors.textTertiary,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppColors.accent,
+                                                  foregroundColor: AppColors.black,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                ),
+                                                onPressed: () {
+                                                  final newName = nameController.text.trim();
+                                                  if (newName.isEmpty) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text("Il nome non può essere vuoto!"),
+                                                        backgroundColor: AppColors.error,
+                                                      ),
+                                                    );
+                                                    return;
+                                                  }
+                                                  setState(() {
+                                                    _players[i] = Player(n: p.n, name: newName);
+                                                  });
+                                                  Navigator.pop(ctx);
+                                                },
+                                                child: const Text(
+                                                  "Salva",
+                                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: Text(
+                                          p.name,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.textSecondary,
+                                            decoration: TextDecoration.underline,
+                                            decorationStyle: TextDecorationStyle.dotted,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),

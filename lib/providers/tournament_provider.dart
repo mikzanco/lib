@@ -140,31 +140,19 @@ class TournamentProvider extends ChangeNotifier {
     await batch.commit();
   }
 
-  // Resetta tutto il torneo ai dati di fabbrica
+  // Resetta solo le partite del torneo (mantiene le squadre modificate)
   Future<void> resetTournament() async {
     try {
       final batch = FirebaseFirestore.instance.batch();
 
-      // 1. Elimina tutte le squadre correnti su Firestore
-      for (final t in teams) {
-        final docRef = FirebaseFirestore.instance.collection('teams').doc(t.id.toString());
-        batch.delete(docRef);
-      }
-
-      // 2. Carica le nuove squadre iniziali (con jolly e giocatori reali)
-      for (final team in INITIAL_TEAMS) {
-        final docRef = FirebaseFirestore.instance.collection('teams').doc(team.id.toString());
-        batch.set(docRef, team.toJson());
-      }
-
-      // 3. Elimina tutti i match correnti
+      // 1. Elimina tutti i match correnti
       for (final m in matches) {
         final docRef =
             FirebaseFirestore.instance.collection('matches').doc(m.id);
         batch.delete(docRef);
       }
 
-      // 4. Ricrea solo i match dei gironi iniziali resettati
+      // 2. Ricrea solo i match dei gironi iniziali resettati
       final cleanMatches = INITIAL_MATCHES.map((m) {
         return MatchModel(
           id: m.id,
@@ -241,6 +229,106 @@ class TournamentProvider extends ChangeNotifier {
         awayGoals: 0,
         scorers: [],
         phase: original.phase,
+        timerStartTimestamp: DateTime.now().millisecondsSinceEpoch,
+        elapsedSeconds: 0,
+        timerIsRunning: true,
+      );
+      FirebaseFirestore.instance
+          .collection('matches')
+          .doc(matchId)
+          .set(updated.toJson());
+    }
+  }
+
+  void resumeTimer(String matchId) {
+    final idx = matches.indexWhere((m) => m.id == matchId);
+    if (idx != -1) {
+      final match = matches[idx];
+      final updated = MatchModel(
+        id: match.id,
+        group: match.group,
+        home: match.home,
+        away: match.away,
+        day: match.day,
+        time: match.time,
+        status: match.status,
+        homeGoals: match.homeGoals,
+        awayGoals: match.awayGoals,
+        scorers: match.scorers,
+        phase: match.phase,
+        homeFouls: match.homeFouls,
+        awayFouls: match.awayFouls,
+        homePenalties: match.homePenalties,
+        awayPenalties: match.awayPenalties,
+        isExtraTime: match.isExtraTime,
+        timerStartTimestamp: DateTime.now().millisecondsSinceEpoch,
+        elapsedSeconds: match.elapsedSeconds,
+        timerIsRunning: true,
+      );
+      FirebaseFirestore.instance
+          .collection('matches')
+          .doc(matchId)
+          .set(updated.toJson());
+    }
+  }
+
+  void pauseTimer(String matchId, int currentElapsedSeconds) {
+    final idx = matches.indexWhere((m) => m.id == matchId);
+    if (idx != -1) {
+      final match = matches[idx];
+      final updated = MatchModel(
+        id: match.id,
+        group: match.group,
+        home: match.home,
+        away: match.away,
+        day: match.day,
+        time: match.time,
+        status: match.status,
+        homeGoals: match.homeGoals,
+        awayGoals: match.awayGoals,
+        scorers: match.scorers,
+        phase: match.phase,
+        homeFouls: match.homeFouls,
+        awayFouls: match.awayFouls,
+        homePenalties: match.homePenalties,
+        awayPenalties: match.awayPenalties,
+        isExtraTime: match.isExtraTime,
+        timerStartTimestamp: null,
+        elapsedSeconds: currentElapsedSeconds,
+        timerIsRunning: false,
+      );
+      FirebaseFirestore.instance
+          .collection('matches')
+          .doc(matchId)
+          .set(updated.toJson());
+    }
+  }
+
+  void adjustTimer(String matchId, int deltaSeconds, int currentElapsedSeconds) {
+    final idx = matches.indexWhere((m) => m.id == matchId);
+    if (idx != -1) {
+      final match = matches[idx];
+      final newElapsed = (currentElapsedSeconds + deltaSeconds).clamp(0, 99 * 60);
+      final updated = MatchModel(
+        id: match.id,
+        group: match.group,
+        home: match.home,
+        away: match.away,
+        day: match.day,
+        time: match.time,
+        status: match.status,
+        homeGoals: match.homeGoals,
+        awayGoals: match.awayGoals,
+        scorers: match.scorers,
+        phase: match.phase,
+        homeFouls: match.homeFouls,
+        awayFouls: match.awayFouls,
+        homePenalties: match.homePenalties,
+        awayPenalties: match.awayPenalties,
+        isExtraTime: match.isExtraTime,
+        timerStartTimestamp: match.timerIsRunning ? DateTime.now().millisecondsSinceEpoch : null,
+        elapsedSeconds: newElapsed,
+        timerIsRunning: match.timerIsRunning,
       );
       FirebaseFirestore.instance
           .collection('matches')
@@ -286,6 +374,12 @@ class TournamentProvider extends ChangeNotifier {
         phase: match.phase,
         homeFouls: match.homeFouls,
         awayFouls: match.awayFouls,
+        homePenalties: match.homePenalties,
+        awayPenalties: match.awayPenalties,
+        isExtraTime: match.isExtraTime,
+        timerStartTimestamp: match.timerStartTimestamp,
+        elapsedSeconds: match.elapsedSeconds,
+        timerIsRunning: match.timerIsRunning,
       );
 
       triggerGoalFlash();
@@ -323,6 +417,12 @@ class TournamentProvider extends ChangeNotifier {
         phase: match.phase,
         homeFouls: homeF,
         awayFouls: awayF,
+        homePenalties: match.homePenalties,
+        awayPenalties: match.awayPenalties,
+        isExtraTime: match.isExtraTime,
+        timerStartTimestamp: match.timerStartTimestamp,
+        elapsedSeconds: match.elapsedSeconds,
+        timerIsRunning: match.timerIsRunning,
       );
 
       FirebaseFirestore.instance
@@ -350,6 +450,12 @@ class TournamentProvider extends ChangeNotifier {
         phase: match.phase,
         homeFouls: match.homeFouls,
         awayFouls: match.awayFouls,
+        homePenalties: match.homePenalties,
+        awayPenalties: match.awayPenalties,
+        isExtraTime: match.isExtraTime,
+        timerStartTimestamp: null,
+        elapsedSeconds: match.elapsedSeconds,
+        timerIsRunning: false,
       );
 
       if (match.group == 'KO') {

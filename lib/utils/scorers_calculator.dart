@@ -1,5 +1,6 @@
 import '../models/match_model.dart';
 import '../models/team.dart';
+import 'player_resolver.dart';
 
 class ScorerRow {
   final String name;
@@ -28,7 +29,7 @@ List<ScorerRow> calcScorers(List<MatchModel> matches, List<Team> teams) {
         if (s.own) continue; // Ignoriamo gli autogol
         
         final playerNum = s.n ?? 0;
-        final playerName = s.player ?? "Sconosciuto";
+        final playerName = resolvePlayerName(teams, s.team, s.n, s.player);
         final key = "${s.team}-$playerNum";
 
         if (!map.containsKey(key)) {

@@ -5,6 +5,7 @@ import '../models/team.dart';
 import '../providers/tournament_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/team_badge.dart';
+import '../utils/player_resolver.dart';
 
 class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
@@ -257,10 +258,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: homeScorers.map((s) {
+                                          final pName = resolvePlayerName(provider.teams, s.team, s.n, s.player);
                                           return Text(
                                             s.own 
-                                                ? (s.player != null ? "${s.player} (A.G.) ${s.min}'" : "Autogol (A.G.) ${s.min}'")
-                                                : "${s.player} ${s.min}'",
+                                                ? (s.player != null ? "$pName (A.G.) ${s.min}'" : "Autogol (A.G.) ${s.min}'")
+                                                : "$pName ${s.min}'",
                                             style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
@@ -277,10 +279,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: awayScorers.map((s) {
+                                          final pName = resolvePlayerName(provider.teams, s.team, s.n, s.player);
                                           return Text(
                                             s.own 
-                                                ? (s.player != null ? "${s.player} (A.G.) ${s.min}'" : "Autogol (A.G.) ${s.min}'")
-                                                : "${s.player} ${s.min}'",
+                                                ? (s.player != null ? "$pName (A.G.) ${s.min}'" : "Autogol (A.G.) ${s.min}'")
+                                                : "$pName ${s.min}'",
                                             style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,

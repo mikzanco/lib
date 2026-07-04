@@ -19,6 +19,9 @@ class MatchModel {
   int? homePenalties;
   int? awayPenalties;
   bool isExtraTime;
+  int? timerStartTimestamp;
+  int elapsedSeconds;
+  bool timerIsRunning;
 
   MatchModel({
     required this.id,
@@ -37,6 +40,9 @@ class MatchModel {
     this.homePenalties,
     this.awayPenalties,
     this.isExtraTime = false,
+    this.timerStartTimestamp,
+    this.elapsedSeconds = 0,
+    this.timerIsRunning = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +62,9 @@ class MatchModel {
         'homePenalties': homePenalties,
         'awayPenalties': awayPenalties,
         'isExtraTime': isExtraTime,
+        'timerStartTimestamp': timerStartTimestamp,
+        'elapsedSeconds': elapsedSeconds,
+        'timerIsRunning': timerIsRunning,
       };
 
   factory MatchModel.fromJson(Map<String, dynamic> j) => MatchModel(
@@ -80,5 +89,8 @@ class MatchModel {
         homePenalties: j['homePenalties'] as int?,
         awayPenalties: j['awayPenalties'] as int?,
         isExtraTime: j['isExtraTime'] as bool? ?? false,
+        timerStartTimestamp: j['timerStartTimestamp'] as int?,
+        elapsedSeconds: j['elapsedSeconds'] as int? ?? 0,
+        timerIsRunning: j['timerIsRunning'] as bool? ?? false,
       );
 }

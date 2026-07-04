@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import 'team_badge.dart';
 import 'live_dot.dart';
 import 'goal_panel.dart';
+import '../utils/player_resolver.dart';
 
 class LiveCard extends StatefulWidget {
   final MatchModel match;
@@ -55,20 +56,33 @@ class _LiveCardState extends State<LiveCard> {
     return "$minutesStr:$secondsStr";
   }
 
+  void _updateElapsedSeconds() {
+    final match = widget.match;
+    if (match.timerIsRunning && match.timerStartTimestamp != null) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final diff = (now - match.timerStartTimestamp!) ~/ 1000;
+      _elapsedSeconds = match.elapsedSeconds + diff;
+    } else {
+      _elapsedSeconds = match.elapsedSeconds;
+    }
+
+    int limit = _maxDuration * 60;
+    if (widget.match.id == 'F' && !_isSecondHalfStarted) {
+      limit = 900;
+    }
+    if (_elapsedSeconds > limit) {
+      _elapsedSeconds = limit;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // Inizializza a 1 (o l'ultimo marcatore + 1 per realismo)
-    int initialMin = 1;
-    if (widget.match.scorers.isNotEmpty) {
-      final maxMin = widget.match.scorers.map((s) => s.min).reduce((a, b) => a > b ? a : b);
-      initialMin = maxMin + 1;
+    _isSecondHalfStarted = widget.match.elapsedSeconds >= 900;
+    _updateElapsedSeconds();
+    if (widget.match.timerIsRunning) {
+      _startTimer();
     }
-    initialMin = initialMin.clamp(1, _maxDuration);
-    _elapsedSeconds = (initialMin - 1) * 60;
-    _isSecondHalfStarted = _elapsedSeconds >= 900;
-
-    _startTimer();
   }
 
   void _startTimer() {
@@ -76,14 +90,16 @@ class _LiveCardState extends State<LiveCard> {
     _secondTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
+          _updateElapsedSeconds();
           int limit = _maxDuration * 60;
           if (widget.match.id == 'F' && !_isSecondHalfStarted) {
-            limit = 900; // 15:00
+            limit = 900;
           }
-          if (_elapsedSeconds < limit) {
-            _elapsedSeconds++;
-          } else {
+          if (_elapsedSeconds >= limit) {
             _secondTimer?.cancel();
+            if (widget.match.timerIsRunning && Provider.of<TournamentProvider>(context, listen: false).adminMode) {
+              Provider.of<TournamentProvider>(context, listen: false).pauseTimer(widget.match.id, limit);
+            }
           }
         });
       }
@@ -93,15 +109,16 @@ class _LiveCardState extends State<LiveCard> {
   @override
   void didUpdateWidget(covariant LiveCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    int limit = _maxDuration * 60;
-    if (widget.match.id == 'F' && !_isSecondHalfStarted) {
-      limit = 900;
+    if (widget.match.elapsedSeconds >= 900) {
+      _isSecondHalfStarted = true;
     }
-    if (_elapsedSeconds > limit) {
-      _elapsedSeconds = limit;
-    }
-    if (_elapsedSeconds < limit && (_secondTimer == null || !_secondTimer!.isActive)) {
-      _startTimer();
+    _updateElapsedSeconds();
+    if (widget.match.timerIsRunning) {
+      if (_secondTimer == null || !_secondTimer!.isActive) {
+        _startTimer();
+      }
+    } else {
+      _secondTimer?.cancel();
     }
   }
 
@@ -427,6 +444,7 @@ class _LiveCardState extends State<LiveCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: homeScorers.map((s) {
+                            final pName = resolvePlayerName(provider.teams, s.team, s.n, s.player);
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2.0),
                               child: Row(
@@ -436,8 +454,8 @@ class _LiveCardState extends State<LiveCard> {
                                   Expanded(
                                     child: Text(
                                       s.own 
-                                          ? (s.player != null ? "#${s.n} ${s.player} (A.G.)" : "Autogol (A.G.)")
-                                          : "#${s.n} ${s.player}",
+                                          ? (s.player != null ? "#${s.n} $pName (A.G.)" : "Autogol (A.G.)")
+                                          : "#${s.n} $pName",
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
@@ -474,6 +492,7 @@ class _LiveCardState extends State<LiveCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: awayScorers.map((s) {
+                            final pName = resolvePlayerName(provider.teams, s.team, s.n, s.player);
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2.0),
                               child: Row(
@@ -483,8 +502,8 @@ class _LiveCardState extends State<LiveCard> {
                                   Expanded(
                                     child: Text(
                                       s.own 
-                                          ? (s.player != null ? "#${s.n} ${s.player} (A.G.)" : "Autogol (A.G.)")
-                                          : "#${s.n} ${s.player}",
+                                          ? (s.player != null ? "#${s.n} $pName (A.G.)" : "Autogol (A.G.)")
+                                          : "#${s.n} $pName",
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
@@ -583,6 +602,77 @@ class _LiveCardState extends State<LiveCard> {
                             ),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Gestione Tempo Admin Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "GESTIONE TEMPO",
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // -1 Min
+                          GestureDetector(
+                            onTap: () => provider.adjustTimer(widget.match.id, -60, _elapsedSeconds),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceBg,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: const Text("-1 min", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Play / Pause
+                          GestureDetector(
+                            onTap: () {
+                              if (widget.match.timerIsRunning) {
+                                provider.pauseTimer(widget.match.id, _elapsedSeconds);
+                              } else {
+                                provider.resumeTimer(widget.match.id);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: widget.match.timerIsRunning ? AppColors.error.withValues(alpha: 0.15) : AppColors.success.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: widget.match.timerIsRunning ? AppColors.error : AppColors.success),
+                              ),
+                              child: Icon(
+                                widget.match.timerIsRunning ? Icons.pause : Icons.play_arrow,
+                                size: 16,
+                                color: widget.match.timerIsRunning ? AppColors.error : AppColors.success,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // +1 Min
+                          GestureDetector(
+                            onTap: () => provider.adjustTimer(widget.match.id, 60, _elapsedSeconds),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceBg,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: const Text("+1 min", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

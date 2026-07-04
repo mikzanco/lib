@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/team.dart';
 import '../models/match_model.dart';
@@ -14,22 +14,42 @@ class TournamentProvider extends ChangeNotifier {
   bool adminMode = false;
   bool loaded = false;
   bool goalFlash = false;
-  String adminPin = "425084"; // PIN predefinito
+  String adminPin = ""; // Caricato da Firestore
 
   StreamSubscription? _teamsSubscription;
   StreamSubscription? _matchesSubscription;
+  StreamSubscription? _configSubscription;
   bool _teamsLoaded = false;
   bool _matchesLoaded = false;
+  bool _configLoaded = false;
 
   // Caricamento in tempo reale da Firestore
   Future<void> loadData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedPin = prefs.getString('lozzo-admin-pin');
-      if (savedPin != null) {
-        adminPin = savedPin;
+    // Carica il PIN admin da Firestore (centralizzato)
+    _configSubscription = FirebaseFirestore.instance
+        .collection('config')
+        .doc('admin')
+        .snapshots()
+        .listen((snapshot) async {
+      if (!snapshot.exists) {
+        // Prima volta: crea il documento con un PIN predefinito
+        // Questo PIN verrà scritto UNA SOLA VOLTA su Firestore
+        await FirebaseFirestore.instance
+            .collection('config')
+            .doc('admin')
+            .set({'pin': '425084'});
+      } else {
+        adminPin = snapshot.data()?['pin'] ?? '425084';
+        _configLoaded = true;
+        _checkLoaded();
       }
-    } catch (_) {}
+    }, onError: (e) {
+      debugPrint("Errore caricamento config: $e");
+      // Fallback: usa un PIN vuoto (nessun accesso)
+      adminPin = '';
+      _configLoaded = true;
+      _checkLoaded();
+    });
 
     // Ascolta le modifiche alle squadre in tempo reale
     _teamsSubscription = FirebaseFirestore.instance
@@ -92,7 +112,7 @@ class TournamentProvider extends ChangeNotifier {
   }
 
   void _checkLoaded() {
-    if (_teamsLoaded && _matchesLoaded) {
+    if (_teamsLoaded && _matchesLoaded && _configLoaded) {
       loaded = true;
       notifyListeners();
     }
@@ -177,15 +197,19 @@ class TournamentProvider extends ChangeNotifier {
     }
   }
 
-  // Admin PIN management
-  bool verifyPin(String pin) => pin == adminPin;
+  // Admin PIN management (centralizzato su Firestore)
+  bool verifyPin(String pin) => adminPin.isNotEmpty && pin == adminPin;
 
   Future<void> changePin(String newPin) async {
     adminPin = newPin;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('lozzo-admin-pin', newPin);
-    } catch (_) {}
+      await FirebaseFirestore.instance
+          .collection('config')
+          .doc('admin')
+          .set({'pin': newPin});
+    } catch (e) {
+      debugPrint("Errore salvataggio PIN: $e");
+    }
     notifyListeners();
   }
 
@@ -604,6 +628,7 @@ class TournamentProvider extends ChangeNotifier {
   void dispose() {
     _teamsSubscription?.cancel();
     _matchesSubscription?.cancel();
+    _configSubscription?.cancel();
     super.dispose();
   }
 

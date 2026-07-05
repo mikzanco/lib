@@ -6,6 +6,7 @@ import '../providers/tournament_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/team_badge.dart';
 import '../utils/player_resolver.dart';
+import '../widgets/match_edit_modal.dart';
 
 class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
@@ -239,6 +240,40 @@ class _ResultsScreenState extends State<ResultsScreen> {
                                     color: chipColors[m.group] ?? AppColors.accent,
                                   ),
                                 ),
+                                if (provider.adminMode) ...[
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => MatchEditModal(match: m),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.edit, size: 10, color: AppColors.accent),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            "EDIT",
+                                            style: TextStyle(
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w900,
+                                              color: AppColors.accent,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
 

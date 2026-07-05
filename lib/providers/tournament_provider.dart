@@ -730,6 +730,22 @@ class TournamentProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateMatch(MatchModel updatedMatch) async {
+    try {
+      if (updatedMatch.status == MatchStatus.done && updatedMatch.group == 'KO') {
+        _endBracketMatch(updatedMatch);
+      } else {
+        await FirebaseFirestore.instance
+            .collection('matches')
+            .doc(updatedMatch.id)
+            .set(updatedMatch.toJson());
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Errore aggiornamento match: $e");
+    }
+  }
+
   // Team CRUD in Firestore
   void addTeam(Team team) {
     FirebaseFirestore.instance
